@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Immune Response Mechanism - Final Animated Simulation</title>
+<style>
+  body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    margin: 0;
+    overflow-x: hidden;
+  }
+
+  header {
+    text-align: center;
+    padding: 20px;
+    background: #283593;
+    color: white;
+    font-size: 2em;
+    font-weight: 600;
+    letter-spacing: 1px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: auto;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .btn {
+    background: #3949ab;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .btn:hover {
+    background: #5c6bc0;
+    transform: scale(1.05);
+  }
+
+  .animation-area {
+    position: relative;
+    height: 480px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.25);
+    margin: 30px auto;
+    overflow: hidden;
+  }
+
+  .icon {
+    position: absolute;
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    transition: all 2.5s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.8em;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    animation: float 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    100% { transform: translateY(-8px); }
+  }
+
+  /* Colors for immune cells */
+  #pathogen { background: #ef5350; }
+  #macrophage { background: #66bb6a; }
+  #tcell { background: #ab47bc; }
+  #bcell { background: #42a5f5; }
+  #antibody { background: #ffca28; color:#1a237e; }
+  #memory { background: #8d6e63; }
+
+  .tooltip {
+    position: absolute;
+    background: rgba(25, 118, 210, 0.9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    white-space: nowrap;
+    transform: translate(-50%, -120%);
+    display: none;
+  }
+
+  .icon:hover .tooltip { display: block; }
+
+  .caption {
+    font-size: 1.25em;
+    font-weight: 500;
+    color: #283593;
+    margin-top: 25px;
+    min-height: 80px;
+    line-height: 1.4em;
+  }
+
+  .arrow {
+    position: absolute;
+    width: 80px;
+    height: 4px;
+    background: #1a237e;
+    transform-origin: left center;
+    opacity: 0;
+    animation: arrowBlink 1.5s linear infinite;
+  }
+
+  @keyframes arrowBlink {
+    0%,100% { opacity: 0.2; }
+    50% { opacity: 1; }
+  }
+
+  .legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.95em;
+  }
+
+  .color-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+  }
+
+  .antibodyParticle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #ffca28;
+    border-radius: 50%;
+    opacity: 0;
+    box-shadow: 0 0 5px #ffeb3b;
+  }
+
+  footer {
+    text-align: center;
+    padding: 15px;
+    background: #1a237e;
+    color: white;
+    font-size: 0.9em;
+  }
+</style>
+</head>
+<body>
+
+<header>🧬 Immune Response Mechanism — Animated Simulation</header>
+
+<div class="container">
+  <p>Click <b>Start Simulation</b> to watch immune cells identify, attack, and remember pathogens.</p>
+  <button id="startBtn" class="btn">▶ Start Simulation</button>
+
+  <div class="legend">
+    <div class="legend-item"><div class="color-box" style="background:#ef5350;"></div> Pathogen</div>
+    <div class="legend-item"><div class="color-box" style="background:#66bb6a;"></div> Macrophage</div>
+    <div class="legend-item"><div class="color-box" style="background:#ab47bc;"></div> T-Cell</div>
+    <div class="legend-item"><div class="color-box" style="background:#42a5f5;"></div> B-Cell</div>
+    <div class="legend-item"><div class="color-box" style="background:#ffca28;"></div> Antibody</div>
+    <div class="legend-item"><div class="color-box" style="background:#8d6e63;"></div> Memory Cell</div>
+  </div>
+
+  <div class="animation-area" id="stage">
+    <div class="icon" id="pathogen" style="top:180px; left:850px;">🦠<div class="tooltip">Invading Pathogen</div></div>
+    <div class="icon" id="macrophage" style="top:230px; left:120px;">🧫<div class="tooltip">Macrophage</div></div>
+    <div class="icon" id="tcell" style="top:320px; left:180px; opacity:0;">T<div class="tooltip">Helper T-Cell</div></div>
+    <div class="icon" id="bcell" style="top:320px; left:340px; opacity:0;">B<div class="tooltip">B-Cell</div></div>
+    <div class="icon" id="antibody" style="top:280px; left:400px; opacity:0;">🧪<div class="tooltip">Antibody</div></div>
+    <div class="icon" id="memory" style="top:100px; left:420px; opacity:0;">🧠<div class="tooltip">Memory Cell</div></div>
+  </div>
+
+  <div id="caption" class="caption">🩸 Ready to begin immune defense simulation...</div>
+</div>
+
+<footer>© 2025 Biology Animation Project | Immune Response Mechanism</footer>
+
+<script>
+const pathogen = document.getElementById('pathogen');
+const macrophage = document.getElementById('macrophage');
+const tcell = document.getElementById('tcell');
+const bcell = document.getElementById('bcell');
+const antibody = document.getElementById('antibody');
+const memory = document.getElementById('memory');
+const caption = document.getElementById('caption');
+const startBtn = document.getElementById('startBtn');
+const stage = document.getElementById('stage');
+let running = false;
+
+function narrate(text) {
+  caption.innerHTML = "🧠 " + text;
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.rate = 1.05;
+  msg.pitch = 1.1;
+  window.speechSynthesis.speak(msg);
+}
+
+function resetScene() {
+  pathogen.style.left = "850px";
+  pathogen.style.top = "180px";
+  pathogen.style.opacity = 1;
+  macrophage.style.left = "120px";
+  tcell.style.opacity = 0;
+  bcell.style.opacity = 0;
+  antibody.style.opacity = 0;
+  memory.style.opacity = 0;
+}
+
+function createAntibodyAttack() {
+  for (let i = 0; i < 6; i++) {
+    const particle = document.createElement("div");
+    particle.className = "antibodyParticle";
+    particle.style.left = "420px";
+    particle.style.top = (280 + Math.random() * 80) + "px";
+    stage.appendChild(particle);
+
+    setTimeout(() => {
+      particle.style.transition = "all 1.5s ease-in-out";
+      particle.style.opacity = 1;
+      particle.style.left = (500 + Math.random() * 100) + "px";
+      particle.style.top = (180 + Math.random() * 80) + "px";
+    }, i * 200);
+
+    setTimeout(() => {
+      particle.style.opacity = 0;
+    }, 2500 + i * 200);
+
+    setTimeout(() => {
+      stage.removeChild(particle);
+    }, 4000 + i * 200);
+  }
+}
+
+function startSimulation() {
+  if (running) return;
+  running = true;
+  startBtn.innerText = "⏸ Running...";
+  window.speechSynthesis.cancel();
+  resetScene();
+
+  narrate("Step 1: A red pathogen invades the body, carrying harmful antigens.");
+  pathogen.style.transition = "all 4s ease-in-out";
+  pathogen.style.left = "500px";
+
+  setTimeout(() => {
+    narrate("Step 2: The green macrophage detects and engulfs the pathogen — the first immune defense.");
+    macrophage.style.transition = "all 4s ease-in-out";
+    macrophage.style.left = "470px";
+    pathogen.style.opacity = 0.4;
+  }, 4000);
+
+  setTimeout(() => {
+    narrate("Step 3: Macrophage presents the antigen and activates purple Helper T-cells.");
+    tcell.style.opacity = 1;
+  }, 8500);
+
+  setTimeout(() => {
+    narrate("Step 4: Helper T-cells activate blue B-cells, preparing for antibody production.");
+    bcell.style.opacity = 1;
+  }, 11500);
+
+  setTimeout(() => {
+    narrate("Step 5: Yellow antibodies are released and attack the pathogen directly.");
+    antibody.style.opacity = 1;
+    antibody.style.left = "580px";
+    antibody.style.top = "200px";
+    createAntibodyAttack();
+    pathogen.style.opacity = 0.1;
+  }, 15000);
+
+  setTimeout(() => {
+    narrate("Step 6: Brown memory cells form, storing the pathogen’s signature for faster response next time.");
+    memory.style.opacity = 1;
+  }, 18500);
+
+  setTimeout(() => {
+    narrate("✅ The immune system successfully defeated the pathogen and gained long-term immunity!");
+    startBtn.innerText = "🔁 Replay Simulation";
+    running = false;
+  }, 21500);
+}
+
+startBtn.addEventListener('click', () => {
+  if (!running) startSimulation();
+});
+</script>
+
+</body>
+</html>
